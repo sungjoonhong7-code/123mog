@@ -104,6 +104,10 @@ export default function MealsPage() {
     if (tagList.includes('sugar_good')) badges.push({ emoji: '💚', label: sugarLabel, color: 'bg-green-100 dark:bg-green-900 text-green-700' });
     else if (tagList.includes('sugar_bad')) badges.push({ emoji: '❤️', label: sugarLabel, color: 'bg-red-100 dark:bg-red-900 text-red-700' });
     else if (tagList.includes('sugar_neutral')) badges.push({ emoji: '💛', label: sugarLabel, color: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700' });
+    const bpLabel = lang === 'ko' ? '혈압' : 'BP';
+    if (tagList.includes('sodium_good')) badges.push({ emoji: '💚', label: bpLabel, color: 'bg-green-100 dark:bg-green-900 text-green-700' });
+    else if (tagList.includes('sodium_bad')) badges.push({ emoji: '❤️', label: bpLabel, color: 'bg-red-100 dark:bg-red-900 text-red-700' });
+    else if (tagList.includes('sodium_neutral')) badges.push({ emoji: '💛', label: bpLabel, color: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700' });
     return badges;
   };
 
@@ -299,6 +303,9 @@ function MealHistory({ onEdit }: { onEdit: (meal: MealHistoryEntry) => void }) {
                       {item.healthTags?.includes('sugar_good') && <span className="ml-0.5 text-[9px] bg-green-100 dark:bg-green-900 text-green-700 px-1 rounded">💚{lang === 'ko' ? '혈당' : 'Sugar'}</span>}
                       {item.healthTags?.includes('sugar_bad') && <span className="ml-0.5 text-[9px] bg-red-100 dark:bg-red-900 text-red-700 px-1 rounded">❤️{lang === 'ko' ? '혈당' : 'Sugar'}</span>}
                       {item.healthTags?.includes('sugar_neutral') && <span className="ml-0.5 text-[9px] bg-yellow-100 dark:bg-yellow-900 text-yellow-700 px-1 rounded">💛{lang === 'ko' ? '혈당' : 'Sugar'}</span>}
+                      {item.healthTags?.includes('sodium_good') && <span className="ml-0.5 text-[9px] bg-green-100 dark:bg-green-900 text-green-700 px-1 rounded">💚{lang === 'ko' ? '혈압' : 'BP'}</span>}
+                      {item.healthTags?.includes('sodium_bad') && <span className="ml-0.5 text-[9px] bg-red-100 dark:bg-red-900 text-red-700 px-1 rounded">❤️{lang === 'ko' ? '혈압' : 'BP'}</span>}
+                      {item.healthTags?.includes('sodium_neutral') && <span className="ml-0.5 text-[9px] bg-yellow-100 dark:bg-yellow-900 text-yellow-700 px-1 rounded">💛{lang === 'ko' ? '혈압' : 'BP'}</span>}
                       <button onClick={() => deleteItem(meal.id, item.id)} title={t.meals.deleteBtn}
                         className="ml-0.5 text-gray-300 dark:text-gray-600 hover:text-red-500">✕</button>
                     </span>

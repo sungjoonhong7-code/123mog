@@ -6,6 +6,7 @@ import SummaryCards from "@/components/dashboard/SummaryCards";
 import MealList from "@/components/dashboard/MealList";
 import MacroChart from "@/components/dashboard/MacroChart";
 import TrendChart from "@/components/dashboard/TrendChart";
+import { withSodiumTag } from "@/lib/healthTags";
 import { format } from "date-fns";
 
 interface DashboardPageProps {
@@ -65,7 +66,10 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     items: meal.items.map((item) => ({
       id: item.id,
       foodName: item.food.name,
-      healthTags: item.food.healthTags,
+      healthTags: withSodiumTag(
+        item.food.healthTags,
+        item.totalGrams > 0 && item.totalSodium != null ? (item.totalSodium / item.totalGrams) * 100 : null
+      ),
       quantity: item.quantity,
       unitName: item.unitName,
       totalCalories: item.totalCalories,

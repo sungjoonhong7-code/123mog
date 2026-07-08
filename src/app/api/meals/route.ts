@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { computeMealItems } from "@/lib/mealItems";
 import { mealCreateSchema } from "@/lib/validation";
+import { withSodiumTag } from "@/lib/healthTags";
 
 export async function GET(request: NextRequest) {
   const session = await auth();
@@ -45,7 +46,10 @@ export async function GET(request: NextRequest) {
       id: item.id,
       foodId: item.foodId,
       foodName: item.food.name,
-      healthTags: item.food.healthTags,
+      healthTags: withSodiumTag(
+        item.food.healthTags,
+        item.totalGrams > 0 && item.totalSodium != null ? (item.totalSodium / item.totalGrams) * 100 : null
+      ),
       quantity: item.quantity,
       unitName: item.unitName,
       totalCalories: item.totalCalories,

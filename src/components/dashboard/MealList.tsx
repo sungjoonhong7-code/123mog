@@ -58,6 +58,9 @@ export default function MealList({ meals }: MealListProps) {
                         {item.healthTags?.includes('sugar_good') && <span className="ml-0.5 text-[9px] bg-green-100 dark:bg-green-900 text-green-700 px-1 rounded">💚{lang === 'ko' ? '혈당' : 'Sugar'}</span>}
                         {item.healthTags?.includes('sugar_bad') && <span className="ml-0.5 text-[9px] bg-red-100 dark:bg-red-900 text-red-700 px-1 rounded">❤️{lang === 'ko' ? '혈당' : 'Sugar'}</span>}
                         {item.healthTags?.includes('sugar_neutral') && <span className="ml-0.5 text-[9px] bg-yellow-100 dark:bg-yellow-900 text-yellow-700 px-1 rounded">💛{lang === 'ko' ? '혈당' : 'Sugar'}</span>}
+                        {item.healthTags?.includes('sodium_good') && <span className="ml-0.5 text-[9px] bg-green-100 dark:bg-green-900 text-green-700 px-1 rounded">💚{lang === 'ko' ? '혈압' : 'BP'}</span>}
+                        {item.healthTags?.includes('sodium_bad') && <span className="ml-0.5 text-[9px] bg-red-100 dark:bg-red-900 text-red-700 px-1 rounded">❤️{lang === 'ko' ? '혈압' : 'BP'}</span>}
+                        {item.healthTags?.includes('sodium_neutral') && <span className="ml-0.5 text-[9px] bg-yellow-100 dark:bg-yellow-900 text-yellow-700 px-1 rounded">💛{lang === 'ko' ? '혈압' : 'BP'}</span>}
                       </span>
                       <span className="text-gray-400 dark:text-gray-500">{item.quantity}{item.unitName} · {Math.round(item.totalCalories)} kcal</span>
                     </li>

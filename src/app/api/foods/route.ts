@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { foodCreateSchema } from "@/lib/validation";
+import { withSodiumTag } from "@/lib/healthTags";
 
 // GET /api/foods?q=searchterm
 export async function GET(request: NextRequest) {
@@ -17,7 +18,12 @@ export async function GET(request: NextRequest) {
     orderBy: { name: "asc" },
   });
 
-  return NextResponse.json(foods);
+  const withTags = foods.map((food) => ({
+    ...food,
+    healthTags: withSodiumTag(food.healthTags, food.sodiumPer100g),
+  }));
+
+  return NextResponse.json(withTags);
 }
 
 // POST /api/foods - register a custom food not found in the shared database
