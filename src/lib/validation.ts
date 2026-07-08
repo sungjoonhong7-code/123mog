@@ -38,6 +38,31 @@ const healthConditionsSchema = z
     { message: "Invalid health condition" }
   );
 
+export const FOOD_CATEGORIES = ["korean", "japanese", "western", "seasian", "singapore", "custom"] as const;
+
+export const foodServingCreateSchema = z.object({
+  unitName: z.string().trim().min(1).max(30),
+  gramsPerUnit: z.number().positive().finite().max(5000),
+});
+
+export const foodCreateSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  nameEn: z.string().trim().max(100).optional().nullable(),
+  category: z.enum(FOOD_CATEGORIES),
+  subcategory: z.string().trim().max(50).optional().nullable(),
+  caloriesPer100g: z.number().min(0).max(2000),
+  proteinPer100g: z.number().min(0).max(200),
+  fatPer100g: z.number().min(0).max(200),
+  carbsPer100g: z.number().min(0).max(200),
+  sodiumPer100g: z.number().min(0).max(20000).optional().nullable(),
+  servings: z.array(foodServingCreateSchema).min(1),
+});
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(6).max(200),
+});
+
 export const profileUpdateSchema = z.object({
   age: z.number().int().min(1).max(120).optional().nullable(),
   gender: z.enum(GENDERS).optional().nullable(),

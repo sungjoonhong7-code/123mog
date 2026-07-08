@@ -28,16 +28,16 @@ export default function MacroChart({ protein, fat, carbs, meals }: MacroChartPro
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t.dashboard.macroRatio}</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{t.dashboard.macroRatio}</h3>
         <div className="h-64 flex items-center justify-center">
-          {protein + fat + carbs > 0 ? <Doughnut data={doughnutData} options={opts} /> : <p className="text-gray-400 text-sm">{t.dashboard.noData}</p>}
+          {protein + fat + carbs > 0 ? <Doughnut data={doughnutData} options={opts} /> : <p className="text-gray-400 dark:text-gray-500 text-sm">{t.dashboard.noData}</p>}
         </div>
       </div>
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t.dashboard.mealCalories}</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{t.dashboard.mealCalories}</h3>
         <div className="h-64 flex items-center justify-center">
-          {meals.length > 0 ? <Bar data={barData} options={{ ...opts, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } }, plugins: { ...opts.plugins, legend: { display: false } } }} /> : <p className="text-sm text-gray-400">{t.dashboard.noData}</p>}
+          {meals.length > 0 ? <Bar data={barData} options={{ ...opts, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } }, plugins: { ...opts.plugins, legend: { display: false } } }} /> : <p className="text-sm text-gray-400 dark:text-gray-500">{t.dashboard.noData}</p>}
         </div>
       </div>
     </div>

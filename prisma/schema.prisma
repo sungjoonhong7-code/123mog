@@ -23,6 +23,7 @@ model User {
   proteinTarget Float?   // g
   fatTarget     Float?   // g
   carbsTarget   Float?   // g
+  sodiumTarget  Float?   // mg
   healthConditions String? // comma-separated: diabetes, high_cholesterol, hypertension
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -39,6 +40,7 @@ model Food {
   proteinPer100g  Float
   fatPer100g      Float
   carbsPer100g    Float
+  sodiumPer100g   Float?        // mg; null where not yet known
   healthTags      String?       // comma-separated: ldl_good,ldl_bad,sugar_good,sugar_bad,etc.
   servings        FoodServing[]
   mealItems       MealItem[]
@@ -76,4 +78,5 @@ model MealItem {
   totalProtein    Float
   totalFat        Float
   totalCarbs      Float
+  totalSodium     Float?  // mg; null where the food's sodium content isn't known
 }

@@ -38,6 +38,9 @@ export async function GET(request: NextRequest) {
     totalProtein: meal.items.reduce((sum, item) => sum + item.totalProtein, 0),
     totalFat: meal.items.reduce((sum, item) => sum + item.totalFat, 0),
     totalCarbs: meal.items.reduce((sum, item) => sum + item.totalCarbs, 0),
+    totalSodium: meal.items.some((item) => item.totalSodium != null)
+      ? meal.items.reduce((sum, item) => sum + (item.totalSodium ?? 0), 0)
+      : null,
     items: meal.items.map((item) => ({
       id: item.id,
       foodId: item.foodId,
@@ -49,6 +52,7 @@ export async function GET(request: NextRequest) {
       totalProtein: item.totalProtein,
       totalFat: item.totalFat,
       totalCarbs: item.totalCarbs,
+      totalSodium: item.totalSodium,
     })),
   }));
 

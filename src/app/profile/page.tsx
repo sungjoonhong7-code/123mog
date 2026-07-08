@@ -7,7 +7,7 @@ interface Profile {
   age?: number; gender?: string; height?: number; weight?: number;
   goalWeight?: number; activityLevel?: string; healthConditions?: string;
   bmr?: number; tdee?: number; dailyTarget?: number;
-  proteinTarget?: number; fatTarget?: number; carbsTarget?: number;
+  proteinTarget?: number; fatTarget?: number; carbsTarget?: number; sodiumTarget?: number;
 }
 
 const ACTIVITY_LEVELS = [
@@ -37,55 +37,55 @@ export default function ProfilePage() {
     setSaving(false);
   };
 
-  if (loading) return <div className="text-center py-20 text-gray-400">Loading...</div>;
+  if (loading) return <div className="text-center py-20 text-gray-400 dark:text-gray-500">Loading...</div>;
 
   return (
     <div className="max-w-md mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">{t.profile.title}</h1>
-      {message && <div className="mb-4 px-4 py-3 rounded-lg text-sm font-medium bg-emerald-50 text-emerald-600">{message}</div>}
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">{t.profile.title}</h1>
+      {message && <div className="mb-4 px-4 py-3 rounded-lg text-sm font-medium bg-emerald-50 dark:bg-emerald-950 text-emerald-600">{message}</div>}
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t.profile.age}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.profile.age}</label>
             <input type="number" value={profile.age || ""} onChange={(e) => setProfile({ ...profile, age: parseInt(e.target.value) || undefined })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="25" />
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="25" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t.profile.gender}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.profile.gender}</label>
             <select value={profile.gender || ""} onChange={(e) => setProfile({ ...profile, gender: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-gray-800">
               <option value="">Select</option><option value="male">{t.profile.male}</option><option value="female">{t.profile.female}</option>
             </select>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t.profile.height}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.profile.height}</label>
             <input type="number" value={profile.height || ""} onChange={(e) => setProfile({ ...profile, height: parseFloat(e.target.value) || undefined })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="170" />
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="170" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t.profile.weight}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.profile.weight}</label>
             <input type="number" value={profile.weight || ""} onChange={(e) => setProfile({ ...profile, weight: parseFloat(e.target.value) || undefined })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="65" />
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="65" />
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">{t.profile.goalWeight}</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.profile.goalWeight}</label>
           <input type="number" value={profile.goalWeight || ""} onChange={(e) => setProfile({ ...profile, goalWeight: parseFloat(e.target.value) || undefined })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="60" />
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="60" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">{t.profile.activity}</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.profile.activity}</label>
           <select value={profile.activityLevel || ""} onChange={(e) => setProfile({ ...profile, activityLevel: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-gray-800">
             <option value="">Select</option>
             {ACTIVITY_LEVELS.map((al) => (<option key={al.value} value={al.value}>{al.label}</option>))}
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">{t.profile.healthTitle}</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t.profile.healthTitle}</label>
           <div className="space-y-2">
             {[
               { value: 'diabetes', label: t.profile.diabetes, desc: t.profile.diabetesDesc },
@@ -95,12 +95,12 @@ export default function ProfilePage() {
               const selected = (profile.healthConditions || '').split(',').filter(Boolean);
               const isChecked = selected.includes(cond.value);
               return (
-                <label key={cond.value} className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer ${isChecked ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                <label key={cond.value} className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer ${isChecked ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}>
                   <input type="checkbox" checked={isChecked} onChange={(e) => {
                     const ns = e.target.checked ? [...selected, cond.value] : selected.filter(s => s !== cond.value);
                     setProfile({ ...profile, healthConditions: ns.join(',') });
                   }} className="mt-0.5" />
-                  <div><div className="text-sm font-medium text-gray-800">{cond.label}</div><div className="text-xs text-gray-400">{cond.desc}</div></div>
+                  <div><div className="text-sm font-medium text-gray-800 dark:text-gray-200">{cond.label}</div><div className="text-xs text-gray-400 dark:text-gray-500">{cond.desc}</div></div>
                 </label>
               );
             })}
@@ -108,15 +108,18 @@ export default function ProfilePage() {
         </div>
 
         {profile.dailyTarget && (
-          <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-            <h3 className="font-semibold text-gray-800 text-sm">Targets</h3>
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
+            <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">Targets</h3>
             <div className="grid grid-cols-2 gap-2 text-sm">
-              <div><span className="text-gray-500">{t.profile.bmr}:</span> <span className="font-medium">{Math.round(profile.bmr || 0)} kcal</span></div>
-              <div><span className="text-gray-500">{t.profile.tdee}:</span> <span className="font-medium">{Math.round(profile.tdee || 0)} kcal</span></div>
-              <div><span className="text-gray-500">{t.profile.dailyTarget}:</span> <span className="font-medium text-emerald-600">{Math.round(profile.dailyTarget || 0)} kcal</span></div>
-              <div><span className="text-gray-500">{t.profile.proteinTarget}:</span> <span className="font-medium">{profile.proteinTarget}g</span></div>
-              <div><span className="text-gray-500">{t.profile.fatTarget}:</span> <span className="font-medium">{profile.fatTarget}g</span></div>
-              <div><span className="text-gray-500">{t.profile.carbsTarget}:</span> <span className="font-medium">{profile.carbsTarget}g</span></div>
+              <div><span className="text-gray-500 dark:text-gray-400">{t.profile.bmr}:</span> <span className="font-medium">{Math.round(profile.bmr || 0)} kcal</span></div>
+              <div><span className="text-gray-500 dark:text-gray-400">{t.profile.tdee}:</span> <span className="font-medium">{Math.round(profile.tdee || 0)} kcal</span></div>
+              <div><span className="text-gray-500 dark:text-gray-400">{t.profile.dailyTarget}:</span> <span className="font-medium text-emerald-600">{Math.round(profile.dailyTarget || 0)} kcal</span></div>
+              <div><span className="text-gray-500 dark:text-gray-400">{t.profile.proteinTarget}:</span> <span className="font-medium">{profile.proteinTarget}g</span></div>
+              <div><span className="text-gray-500 dark:text-gray-400">{t.profile.fatTarget}:</span> <span className="font-medium">{profile.fatTarget}g</span></div>
+              <div><span className="text-gray-500 dark:text-gray-400">{t.profile.carbsTarget}:</span> <span className="font-medium">{profile.carbsTarget}g</span></div>
+              {profile.sodiumTarget && (
+                <div><span className="text-gray-500 dark:text-gray-400">{t.profile.sodiumTarget}:</span> <span className="font-medium">{Math.round(profile.sodiumTarget)}mg</span></div>
+              )}
             </div>
           </div>
         )}
@@ -126,6 +129,74 @@ export default function ProfilePage() {
           {saving ? t.profile.saving : t.profile.save}
         </button>
       </form>
+
+      <ChangePasswordForm />
     </div>
+  );
+}
+
+function ChangePasswordForm() {
+  const { t } = useT();
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      setIsError(true);
+      setMessage(t.profile.passwordMismatch);
+      return;
+    }
+    setSaving(true);
+    const res = await fetch("/api/user/password", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    if (res.ok) {
+      setIsError(false);
+      setMessage(t.profile.passwordChanged);
+      setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
+      setTimeout(() => setMessage(""), 3000);
+    } else {
+      const data = await res.json();
+      setIsError(true);
+      setMessage(data.error === "invalid_current_password" ? t.profile.currentPasswordWrong : data.error);
+    }
+    setSaving(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 space-y-4 mt-6">
+      <h2 className="font-semibold text-gray-900 dark:text-gray-100">{t.profile.changePassword}</h2>
+      {message && (
+        <div className={`px-4 py-3 rounded-lg text-sm font-medium ${isError ? "bg-red-50 dark:bg-red-950/40 text-red-600" : "bg-emerald-50 dark:bg-emerald-950 text-emerald-600"}`}>
+          {message}
+        </div>
+      )}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.profile.currentPassword}</label>
+        <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.profile.newPassword}</label>
+        <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required minLength={6}
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.profile.confirmNewPassword}</label>
+        <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required minLength={6}
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+      </div>
+      <button type="submit" disabled={saving}
+        className="w-full py-2.5 bg-gray-800 text-white rounded-lg font-medium hover:bg-gray-900 transition-colors disabled:opacity-50">
+        {saving ? t.profile.saving : t.profile.changePasswordBtn}
+      </button>
+    </form>
   );
 }

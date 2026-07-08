@@ -8,8 +8,11 @@ const PROFILE_SELECT = {
   age: true, gender: true, height: true, weight: true,
   goalWeight: true, activityLevel: true, healthConditions: true,
   bmr: true, tdee: true, dailyTarget: true,
-  proteinTarget: true, fatTarget: true, carbsTarget: true,
+  proteinTarget: true, fatTarget: true, carbsTarget: true, sodiumTarget: true,
 } as const;
+
+const GENERAL_SODIUM_TARGET_MG = 2300; // general daily upper limit
+const HYPERTENSION_SODIUM_TARGET_MG = 2000; // recommended limit with hypertension
 
 // GET /api/user/profile - fetch current user's profile
 export async function GET() {
@@ -61,6 +64,7 @@ export async function PUT(request: NextRequest) {
     let proteinTarget = user.proteinTarget;
     let fatTarget = user.fatTarget;
     let carbsTarget = user.carbsTarget;
+    let sodiumTarget = user.sodiumTarget ?? GENERAL_SODIUM_TARGET_MG;
 
     const w = weight ?? user.weight;
     const h = height ?? user.height;
@@ -124,7 +128,7 @@ export async function PUT(request: NextRequest) {
         }
       }
       if (conditions.includes('hypertension') || conditions.includes('고혈압')) {
-        // No macro change; sodium warning in UI
+        sodiumTarget = HYPERTENSION_SODIUM_TARGET_MG;
       }
     }
 
@@ -143,6 +147,7 @@ export async function PUT(request: NextRequest) {
         proteinTarget,
         fatTarget,
         carbsTarget,
+        sodiumTarget,
         healthConditions: healthConditions ?? user.healthConditions,
       },
       select: PROFILE_SELECT,

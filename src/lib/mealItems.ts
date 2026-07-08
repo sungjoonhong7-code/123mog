@@ -16,6 +16,7 @@ export interface ComputedMealItem {
   totalProtein: number;
   totalFat: number;
   totalCarbs: number;
+  totalSodium: number | null;
 }
 
 // Looks up each food/serving and computes the nutrition snapshot stored on MealItem.
@@ -53,6 +54,7 @@ export async function computeMealItems(items: MealItemInput[]): Promise<Computed
         totalProtein: Math.round(food.proteinPer100g * factor * 10) / 10,
         totalFat: Math.round(food.fatPer100g * factor * 10) / 10,
         totalCarbs: Math.round(food.carbsPer100g * factor * 10) / 10,
+        totalSodium: food.sodiumPer100g != null ? Math.round(food.sodiumPer100g * factor * 10) / 10 : null,
       };
     })
   );

@@ -5,6 +5,7 @@ import DateNav from "@/components/dashboard/DateNav";
 import SummaryCards from "@/components/dashboard/SummaryCards";
 import MealList from "@/components/dashboard/MealList";
 import MacroChart from "@/components/dashboard/MacroChart";
+import TrendChart from "@/components/dashboard/TrendChart";
 import { format } from "date-fns";
 
 interface DashboardPageProps {
@@ -30,6 +31,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       proteinTarget: true,
       fatTarget: true,
       carbsTarget: true,
+      sodiumTarget: true,
     },
   });
 
@@ -75,12 +77,17 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const totalProtein = meals.flatMap((m) => m.items).reduce((sum, item) => sum + item.totalProtein, 0);
   const totalFat = meals.flatMap((m) => m.items).reduce((sum, item) => sum + item.totalFat, 0);
   const totalCarbs = meals.flatMap((m) => m.items).reduce((sum, item) => sum + item.totalCarbs, 0);
+  const sodiumItems = meals.flatMap((m) => m.items);
+  const totalSodium = sodiumItems.some((item) => item.totalSodium != null)
+    ? sodiumItems.reduce((sum, item) => sum + (item.totalSodium ?? 0), 0)
+    : null;
 
   const targets = {
     calories: user?.dailyTarget ?? 2000,
     protein: user?.proteinTarget ?? 50,
     fat: user?.fatTarget ?? 50,
     carbs: user?.carbsTarget ?? 250,
+    sodium: user?.sodiumTarget ?? 2300,
   };
 
   return (
@@ -92,6 +99,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         protein={{ current: totalProtein, target: targets.protein }}
         fat={{ current: totalFat, target: targets.fat }}
         carbs={{ current: totalCarbs, target: targets.carbs }}
+        sodium={totalSodium != null ? { current: totalSodium, target: targets.sodium } : undefined}
       />
 
       <MealList meals={mealGroups} />
@@ -105,6 +113,10 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           totalCalories: m.totalCalories,
         }))}
       />
+
+      <div className="mt-6">
+        <TrendChart />
+      </div>
     </div>
   );
 }

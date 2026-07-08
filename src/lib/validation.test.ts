@@ -3,6 +3,7 @@ import {
   registerSchema,
   mealCreateSchema,
   profileUpdateSchema,
+  foodCreateSchema,
 } from "@/lib/validation";
 
 describe("registerSchema", () => {
@@ -79,6 +80,47 @@ describe("profileUpdateSchema", () => {
 
   it("rejects an out-of-range age", () => {
     const result = profileUpdateSchema.safeParse({ age: 999 });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("foodCreateSchema", () => {
+  it("accepts a valid custom food", () => {
+    const result = foodCreateSchema.safeParse({
+      name: "닭가슴살 샐러드",
+      category: "korean",
+      caloriesPer100g: 120,
+      proteinPer100g: 18,
+      fatPer100g: 3,
+      carbsPer100g: 5,
+      servings: [{ unitName: "접시", gramsPerUnit: 250 }],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects an unknown category", () => {
+    const result = foodCreateSchema.safeParse({
+      name: "test",
+      category: "mars",
+      caloriesPer100g: 100,
+      proteinPer100g: 1,
+      fatPer100g: 1,
+      carbsPer100g: 1,
+      servings: [{ unitName: "g", gramsPerUnit: 1 }],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects an empty servings array", () => {
+    const result = foodCreateSchema.safeParse({
+      name: "test",
+      category: "korean",
+      caloriesPer100g: 100,
+      proteinPer100g: 1,
+      fatPer100g: 1,
+      carbsPer100g: 1,
+      servings: [],
+    });
     expect(result.success).toBe(false);
   });
 });
