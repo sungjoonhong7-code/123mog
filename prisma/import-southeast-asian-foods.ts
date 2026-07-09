@@ -1,0 +1,82 @@
+// Additive import: expands Singapore hawker fare and broader Southeast Asian
+// dishes. Never deletes existing data — safe to run on a live database.
+import { PrismaClient } from '@prisma/client'
+import { PrismaLibSql } from '@prisma/adapter-libsql'
+
+const adapter = new PrismaLibSql({ url: 'file:./dev.db' })
+const prisma = new PrismaClient({ adapter })
+
+// category: "singapore" for Singapore hawker/local dishes, "seasian" for broader SEA
+const foods = [
+  // --- Singapore hawker classics ---
+  { name: "로티프라타", nameEn: "Roti Prata (Plain)", category: "singapore", subcategory: "bread", caloriesPer100g: 290, proteinPer100g: 5.5, fatPer100g: 15.0, carbsPer100g: 33.0, sodiumPer100g: 380, servings: [{ unitName: "장", gramsPerUnit: 70 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "에그프라타", nameEn: "Egg Prata", category: "singapore", subcategory: "bread", caloriesPer100g: 260, proteinPer100g: 7.5, fatPer100g: 15.0, carbsPer100g: 25.0, sodiumPer100g: 400, servings: [{ unitName: "장", gramsPerUnit: 90 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "미레부스", nameEn: "Mee Rebus", category: "singapore", subcategory: "noodle", caloriesPer100g: 150, proteinPer100g: 6.0, fatPer100g: 5.0, carbsPer100g: 20.0, sodiumPer100g: 520, servings: [{ unitName: "그릇", gramsPerUnit: 400 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "용타우푸", nameEn: "Yong Tau Foo", category: "singapore", subcategory: "soup", caloriesPer100g: 90, proteinPer100g: 8.0, fatPer100g: 3.0, carbsPer100g: 8.0, sodiumPer100g: 480, servings: [{ unitName: "그릇", gramsPerUnit: 400 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "박초미", nameEn: "Bak Chor Mee", category: "singapore", subcategory: "noodle", caloriesPer100g: 180, proteinPer100g: 8.0, fatPer100g: 6.0, carbsPer100g: 22.0, sodiumPer100g: 550, servings: [{ unitName: "그릇", gramsPerUnit: 400 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "커리퍼프", nameEn: "Curry Puff", category: "singapore", subcategory: "snack", caloriesPer100g: 280, proteinPer100g: 5.0, fatPer100g: 15.0, carbsPer100g: 30.0, sodiumPer100g: 420, servings: [{ unitName: "개", gramsPerUnit: 70 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "무르타박", nameEn: "Murtabak", category: "singapore", subcategory: "bread", caloriesPer100g: 250, proteinPer100g: 10.0, fatPer100g: 12.0, carbsPer100g: 25.0, sodiumPer100g: 480, servings: [{ unitName: "조각", gramsPerUnit: 150 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "코피오", nameEn: "Kopi O (Black Coffee w/ Sugar)", category: "singapore", subcategory: "side", caloriesPer100g: 20, proteinPer100g: 0.1, fatPer100g: 0.0, carbsPer100g: 5.0, sodiumPer100g: 2, servings: [{ unitName: "컵", gramsPerUnit: 200 }, { unitName: "ml", gramsPerUnit: 1 }] },
+  { name: "코피시", nameEn: "Kopi C", category: "singapore", subcategory: "side", caloriesPer100g: 50, proteinPer100g: 1.0, fatPer100g: 1.5, carbsPer100g: 9.0, sodiumPer100g: 15, servings: [{ unitName: "컵", gramsPerUnit: 200 }, { unitName: "ml", gramsPerUnit: 1 }] },
+  { name: "테오", nameEn: "Teh O", category: "singapore", subcategory: "side", caloriesPer100g: 20, proteinPer100g: 0.0, fatPer100g: 0.0, carbsPer100g: 5.0, sodiumPer100g: 2, servings: [{ unitName: "컵", gramsPerUnit: 200 }, { unitName: "ml", gramsPerUnit: 1 }] },
+  { name: "밀로다이노소어", nameEn: "Milo Dinosaur", category: "singapore", subcategory: "side", caloriesPer100g: 95, proteinPer100g: 2.2, fatPer100g: 3.2, carbsPer100g: 14.5, sodiumPer100g: 45, servings: [{ unitName: "컵", gramsPerUnit: 350 }, { unitName: "ml", gramsPerUnit: 1 }] },
+  { name: "반미안", nameEn: "Ban Mian", category: "singapore", subcategory: "noodle", caloriesPer100g: 120, proteinPer100g: 6.0, fatPer100g: 3.0, carbsPer100g: 18.0, sodiumPer100g: 460, servings: [{ unitName: "그릇", gramsPerUnit: 450 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "블랙캐럿케이크", nameEn: "Fried Carrot Cake (Black)", category: "singapore", subcategory: "snack", caloriesPer100g: 185, proteinPer100g: 3.0, fatPer100g: 9.0, carbsPer100g: 24.0, sodiumPer100g: 460, servings: [{ unitName: "접시", gramsPerUnit: 250 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "나시파당", nameEn: "Nasi Padang", category: "singapore", subcategory: "rice", caloriesPer100g: 200, proteinPer100g: 8.0, fatPer100g: 10.0, carbsPer100g: 20.0, sodiumPer100g: 500, servings: [{ unitName: "접시", gramsPerUnit: 400 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "차슈라이스", nameEn: "Char Siew Rice", category: "singapore", subcategory: "rice", caloriesPer100g: 200, proteinPer100g: 9.0, fatPer100g: 7.0, carbsPer100g: 25.0, sodiumPer100g: 480, servings: [{ unitName: "접시", gramsPerUnit: 400 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "로티존", nameEn: "Roti John", category: "singapore", subcategory: "bread", caloriesPer100g: 230, proteinPer100g: 8.0, fatPer100g: 12.0, carbsPer100g: 22.0, sodiumPer100g: 430, servings: [{ unitName: "개", gramsPerUnit: 220 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "샤오롱바오", nameEn: "Xiao Long Bao", category: "singapore", subcategory: "snack", caloriesPer100g: 200, proteinPer100g: 8.0, fatPer100g: 10.0, carbsPer100g: 20.0, sodiumPer100g: 400, servings: [{ unitName: "개", gramsPerUnit: 25 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "하가우", nameEn: "Har Gow", category: "singapore", subcategory: "snack", caloriesPer100g: 180, proteinPer100g: 8.0, fatPer100g: 8.0, carbsPer100g: 18.0, sodiumPer100g: 380, servings: [{ unitName: "개", gramsPerUnit: 25 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "씨우마이", nameEn: "Siew Mai", category: "singapore", subcategory: "snack", caloriesPer100g: 200, proteinPer100g: 10.0, fatPer100g: 12.0, carbsPer100g: 15.0, sodiumPer100g: 420, servings: [{ unitName: "개", gramsPerUnit: 25 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "사고구당믈라카", nameEn: "Sago Gula Melaka", category: "singapore", subcategory: "snack", caloriesPer100g: 130, proteinPer100g: 1.0, fatPer100g: 4.0, carbsPer100g: 22.0, sodiumPer100g: 10, servings: [{ unitName: "그릇", gramsPerUnit: 180 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "완턴미_국물", nameEn: "Wanton Mee (Soup)", category: "singapore", subcategory: "noodle", caloriesPer100g: 100, proteinPer100g: 6.0, fatPer100g: 3.0, carbsPer100g: 14.0, sodiumPer100g: 500, servings: [{ unitName: "그릇", gramsPerUnit: 450 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "완탄미_비빔", nameEn: "Wanton Mee (Dry)", category: "singapore", subcategory: "noodle", caloriesPer100g: 175, proteinPer100g: 7.0, fatPer100g: 6.0, carbsPer100g: 24.0, sodiumPer100g: 520, servings: [{ unitName: "접시", gramsPerUnit: 350 }, { unitName: "g", gramsPerUnit: 1 }] },
+
+  // --- Broader Southeast Asian dishes ---
+  { name: "팟카파오", nameEn: "Pad Krapow (Thai Basil Pork)", category: "seasian", subcategory: "meat", caloriesPer100g: 180, proteinPer100g: 15.0, fatPer100g: 8.0, carbsPer100g: 10.0, sodiumPer100g: 550, servings: [{ unitName: "접시", gramsPerUnit: 350 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "똠얌꿍", nameEn: "Tom Yum Goong", category: "seasian", subcategory: "soup", caloriesPer100g: 60, proteinPer100g: 6.0, fatPer100g: 2.0, carbsPer100g: 5.0, sodiumPer100g: 480, servings: [{ unitName: "그릇", gramsPerUnit: 400 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "그린커리", nameEn: "Thai Green Curry", category: "seasian", subcategory: "soup", caloriesPer100g: 140, proteinPer100g: 8.0, fatPer100g: 10.0, carbsPer100g: 6.0, sodiumPer100g: 500, servings: [{ unitName: "그릇", gramsPerUnit: 350 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "마사만커리", nameEn: "Massaman Curry", category: "seasian", subcategory: "soup", caloriesPer100g: 150, proteinPer100g: 8.0, fatPer100g: 10.0, carbsPer100g: 8.0, sodiumPer100g: 460, servings: [{ unitName: "그릇", gramsPerUnit: 350 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "쏨땀", nameEn: "Som Tum (Papaya Salad)", category: "seasian", subcategory: "side", caloriesPer100g: 50, proteinPer100g: 1.5, fatPer100g: 1.0, carbsPer100g: 10.0, sodiumPer100g: 550, servings: [{ unitName: "접시", gramsPerUnit: 200 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "망고스티키라이스", nameEn: "Mango Sticky Rice", category: "seasian", subcategory: "snack", caloriesPer100g: 180, proteinPer100g: 3.0, fatPer100g: 5.0, carbsPer100g: 32.0, sodiumPer100g: 30, servings: [{ unitName: "접시", gramsPerUnit: 250 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "나시고렝", nameEn: "Nasi Goreng", category: "seasian", subcategory: "rice", caloriesPer100g: 170, proteinPer100g: 6.0, fatPer100g: 6.0, carbsPer100g: 24.0, sodiumPer100g: 480, servings: [{ unitName: "접시", gramsPerUnit: 400 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "른당", nameEn: "Beef Rendang", category: "seasian", subcategory: "meat", caloriesPer100g: 220, proteinPer100g: 18.0, fatPer100g: 15.0, carbsPer100g: 5.0, sodiumPer100g: 450, servings: [{ unitName: "인분", gramsPerUnit: 250 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "가도가도", nameEn: "Gado-Gado", category: "seasian", subcategory: "side", caloriesPer100g: 120, proteinPer100g: 5.0, fatPer100g: 7.0, carbsPer100g: 10.0, sodiumPer100g: 400, servings: [{ unitName: "접시", gramsPerUnit: 300 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "피상고렝", nameEn: "Pisang Goreng (Banana Fritter)", category: "seasian", subcategory: "snack", caloriesPer100g: 230, proteinPer100g: 2.0, fatPer100g: 10.0, carbsPer100g: 33.0, sodiumPer100g: 120, servings: [{ unitName: "개", gramsPerUnit: 60 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "치킨아도보", nameEn: "Chicken Adobo", category: "seasian", subcategory: "meat", caloriesPer100g: 180, proteinPer100g: 16.0, fatPer100g: 11.0, carbsPer100g: 3.0, sodiumPer100g: 520, servings: [{ unitName: "인분", gramsPerUnit: 250 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "시니강", nameEn: "Sinigang", category: "seasian", subcategory: "soup", caloriesPer100g: 50, proteinPer100g: 6.0, fatPer100g: 1.5, carbsPer100g: 4.0, sodiumPer100g: 420, servings: [{ unitName: "그릇", gramsPerUnit: 450 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "룸피아", nameEn: "Lumpia (Filipino Spring Roll)", category: "seasian", subcategory: "snack", caloriesPer100g: 200, proteinPer100g: 6.0, fatPer100g: 10.0, carbsPer100g: 20.0, sodiumPer100g: 380, servings: [{ unitName: "개", gramsPerUnit: 40 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "반미샌드위치", nameEn: "Banh Mi", category: "seasian", subcategory: "bread", caloriesPer100g: 250, proteinPer100g: 10.0, fatPer100g: 8.0, carbsPer100g: 33.0, sodiumPer100g: 550, servings: [{ unitName: "개", gramsPerUnit: 250 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "고이꾸온", nameEn: "Goi Cuon (Fresh Spring Roll)", category: "seasian", subcategory: "snack", caloriesPer100g: 80, proteinPer100g: 5.0, fatPer100g: 1.0, carbsPer100g: 12.0, sodiumPer100g: 250, servings: [{ unitName: "개", gramsPerUnit: 60 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "분보후에", nameEn: "Bun Bo Hue", category: "seasian", subcategory: "noodle", caloriesPer100g: 90, proteinPer100g: 6.0, fatPer100g: 3.0, carbsPer100g: 10.0, sodiumPer100g: 470, servings: [{ unitName: "그릇", gramsPerUnit: 450 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "아쌈락사", nameEn: "Assam Laksa", category: "seasian", subcategory: "noodle", caloriesPer100g: 90, proteinPer100g: 5.0, fatPer100g: 2.0, carbsPer100g: 14.0, sodiumPer100g: 500, servings: [{ unitName: "그릇", gramsPerUnit: 450 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "커리락사", nameEn: "Curry Laksa", category: "seasian", subcategory: "noodle", caloriesPer100g: 140, proteinPer100g: 6.0, fatPer100g: 8.0, carbsPer100g: 12.0, sodiumPer100g: 520, servings: [{ unitName: "그릇", gramsPerUnit: 450 }, { unitName: "g", gramsPerUnit: 1 }] },
+  { name: "인도네시아사테", nameEn: "Sate Ayam (Indonesian Satay)", category: "seasian", subcategory: "meat", caloriesPer100g: 200, proteinPer100g: 18.0, fatPer100g: 12.0, carbsPer100g: 6.0, sodiumPer100g: 450, servings: [{ unitName: "꼬치", gramsPerUnit: 80 }, { unitName: "g", gramsPerUnit: 1 }] },
+]
+
+async function main() {
+  const existing = await prisma.food.findMany({ select: { name: true } })
+  const existingNames = new Set(existing.map((f) => f.name))
+
+  let added = 0
+  let skipped = 0
+  for (const food of foods) {
+    if (existingNames.has(food.name)) {
+      skipped++
+      continue
+    }
+    const { servings, ...data } = food
+    await prisma.food.create({ data: { ...data, servings: { create: servings } } })
+    existingNames.add(food.name)
+    added++
+  }
+
+  console.log(`Added ${added} new Singapore/SEA foods, skipped ${skipped} already present.`)
+}
+
+main()
+  .catch((e) => {
+    console.error(e)
+    process.exit(1)
+  })
+  .finally(() => prisma.$disconnect())

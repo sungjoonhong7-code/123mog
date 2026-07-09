@@ -1,0 +1,165 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { useT } from "@/lib/LangContext";
+import { useToast } from "@/components/Toast";
+
+export default function DayExtras({
+  dateKey,
+  sodiumCurrent,
+  sodiumTarget,
+  healthConditions,
+}: {
+  dateKey: string;
+  sodiumCurrent: number | null;
+  sodiumTarget: number;
+  healthConditions: string;
+}) {
+  const { t } = useT();
+  const { toast } = useToast();
+  const [waterMl, setWaterMl] = useState(0);
+  const [waterTarget, setWaterTarget] = useState(2000);
+  const [streak, setStreak] = useState(0);
+  const [weekDays, setWeekDays] = useState({ logged: 0, onTarget: 0 });
+  const [weight, setWeight] = useState("");
+  const [savingWeight, setSavingWeight] = useState(false);
+
+  const load = useCallback(async () => {
+    const [waterRes, statsRes] = await Promise.all([
+      fetch(`/api/water?date=${dateKey}`),
+      fetch("/api/meals/stats"),
+    ]);
+    if (waterRes.ok) {
+      const w = await waterRes.json();
+      setWaterMl(w.ml ?? 0);
+      setWaterTarget(w.targetMl ?? 2000);
+    }
+    if (statsRes.ok) {
+      const s = await statsRes.json();
+      setStreak(s.streak ?? 0);
+      setWeekDays({ logged: s.weekDaysLogged ?? 0, onTarget: s.weekDaysOnTarget ?? 0 });
+    }
+  }, [dateKey]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const addWater = async () => {
+    const res = await fetch("/api/water", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ date: dateKey, deltaMl: 250 }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setWaterMl(data.ml);
+    }
+  };
+
+  const saveWeight = async () => {
+    const w = parseFloat(weight);
+    if (!w) return;
+    setSavingWeight(true);
+    const res = await fetch("/api/weight", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ date: dateKey, weight: w }),
+    });
+    setSavingWeight(false);
+    if (res.ok) {
+      toast(t.profile.saved);
+      setWeight("");
+    } else {
+      toast(t.common.error, "error");
+    }
+  };
+
+  const waterPct = waterTarget > 0 ? Math.min((waterMl / waterTarget) * 100, 100) : 0;
+  const sodiumPct =
+    sodiumCurrent != null && sodiumTarget > 0
+      ? Math.min((sodiumCurrent / sodiumTarget) * 100, 150)
+      : null;
+
+  const conditions = healthConditions.split(",").filter(Boolean);
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+      <div className="card p-4">
+        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t.dashboard.streak}</div>
+        <div className="text-2xl font-bold text-emerald-600">
+          🔥 {streak}{" "}
+          <span className="text-sm font-medium text-gray-500">{t.dashboard.days}</span>
+        </div>
+        <div className="text-xs text-gray-400 mt-2">
+          {t.dashboard.weekProgress}: {weekDays.onTarget}/{weekDays.logged || 0}
+        </div>
+      </div>
+
+      <div className="card p-4">
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-xs text-gray-500 dark:text-gray-400">{t.dashboard.water}</span>
+          <button onClick={addWater} className="text-xs font-medium text-emerald-600 hover:underline">
+            {t.dashboard.addWater}
+          </button>
+        </div>
+        <div className="text-2xl font-bold">
+          {waterMl}
+          <span className="text-sm font-normal text-gray-400"> / {waterTarget} ml</span>
+        </div>
+        <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 mt-2">
+          <div className="h-full rounded-full bg-sky-500" style={{ width: `${waterPct}%` }} />
+        </div>
+      </div>
+
+      <div className="card p-4">
+        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t.dashboard.weight}</div>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            step="0.1"
+            value={weight}
+            onChange={(e) => setWeight(e.target.value)}
+            placeholder="kg"
+            className="input-field"
+            aria-label={t.dashboard.logWeight}
+          />
+          <button
+            onClick={saveWeight}
+            disabled={savingWeight || !weight}
+            className="btn-primary whitespace-nowrap px-3"
+          >
+            {t.common.save}
+          </button>
+        </div>
+      </div>
+
+      <div className="card p-4">
+        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t.dashboard.healthSummary}</div>
+        {conditions.length === 0 ? (
+          <p className="text-sm text-gray-400">—</p>
+        ) : (
+          <ul className="text-sm space-y-1">
+            {conditions.includes("hypertension") && sodiumPct != null && (
+              <li>
+                {t.dashboard.sodiumProgress}: {Math.round(sodiumCurrent!)} / {sodiumTarget} mg (
+                {sodiumPct.toFixed(0)}%)
+              </li>
+            )}
+            {conditions.includes("diabetes") && (
+              <li className="text-gray-600 dark:text-gray-300">{t.profile.diabetesDesc}</li>
+            )}
+            {conditions.includes("high_cholesterol") && (
+              <li className="text-gray-600 dark:text-gray-300">{t.profile.cholesterolDesc}</li>
+            )}
+          </ul>
+        )}
+        {sodiumPct != null && !conditions.includes("hypertension") && (
+          <p className="text-xs text-gray-400 mt-1">
+            {t.dashboard.sodiumProgress}: {Math.round(sodiumCurrent!)} mg
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
