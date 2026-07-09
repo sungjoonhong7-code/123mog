@@ -1,8 +1,15 @@
 import { z } from "zod";
 
+const passwordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
+  .max(200)
+  .regex(/[A-Za-z]/, "Password must include a letter")
+  .regex(/[0-9]/, "Password must include a number");
+
 export const registerSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
-  password: z.string().min(6).max(200),
+  password: passwordSchema,
   name: z.string().trim().max(100).optional().nullable(),
 });
 
@@ -16,13 +23,21 @@ export const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"] as const;
 
 export const mealCreateSchema = z.object({
   mealType: z.enum(MEAL_TYPES),
-  date: z.string().optional().nullable(),
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional()
+    .nullable(),
   items: z.array(mealItemSchema).min(1),
 });
 
 export const mealUpdateSchema = z.object({
   mealType: z.enum(MEAL_TYPES).optional(),
-  date: z.string().optional().nullable(),
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional()
+    .nullable(),
   items: z.array(mealItemSchema).optional(),
 });
 
@@ -34,8 +49,12 @@ const healthConditionsSchema = z
   .string()
   .max(200)
   .refine(
-    (value) => value.split(",").filter(Boolean).every((c) => (HEALTH_CONDITIONS as readonly string[]).includes(c)),
-    { message: "Invalid health condition" }
+    (value) =>
+      value
+        .split(",")
+        .filter(Boolean)
+        .every((c) => (HEALTH_CONDITIONS as readonly string[]).includes(c)),
+    { message: "Invalid health condition" },
   );
 
 export const foodServingCreateSchema = z.object({
@@ -58,7 +77,7 @@ export const foodCreateSchema = z.object({
 
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1),
-  newPassword: z.string().min(6).max(200),
+  newPassword: passwordSchema,
 });
 
 export const profileUpdateSchema = z.object({
@@ -69,4 +88,28 @@ export const profileUpdateSchema = z.object({
   goalWeight: z.number().min(20).max(500).optional().nullable(),
   activityLevel: z.enum(ACTIVITY_LEVELS).optional().nullable(),
   healthConditions: healthConditionsSchema.optional().nullable(),
+  targetsManual: z.boolean().optional(),
+  dailyTarget: z.number().min(800).max(10000).optional().nullable(),
+  proteinTarget: z.number().min(0).max(500).optional().nullable(),
+  fatTarget: z.number().min(0).max(500).optional().nullable(),
+  carbsTarget: z.number().min(0).max(1000).optional().nullable(),
+  sodiumTarget: z.number().min(0).max(10000).optional().nullable(),
+  waterTargetMl: z.number().int().min(0).max(10000).optional().nullable(),
+  onboardingDone: z.boolean().optional(),
+  name: z.string().trim().max(100).optional().nullable(),
+});
+
+export const weightLogSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  weight: z.number().min(20).max(500),
+});
+
+export const waterLogSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  ml: z.number().int().min(0).max(20000),
+  deltaMl: z.number().int().min(-5000).max(5000).optional(),
+});
+
+export const favoriteSchema = z.object({
+  foodId: z.string().min(1),
 });

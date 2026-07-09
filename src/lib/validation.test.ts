@@ -24,8 +24,18 @@ describe("registerSchema", () => {
     expect(result.success).toBe(false);
   });
 
+  it("rejects password without a letter", () => {
+    const result = registerSchema.safeParse({ email: "a@b.com", password: "12345678" });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects password without a number", () => {
+    const result = registerSchema.safeParse({ email: "a@b.com", password: "abcdefgh" });
+    expect(result.success).toBe(false);
+  });
+
   it("rejects an invalid email", () => {
-    const result = registerSchema.safeParse({ email: "not-an-email", password: "123456" });
+    const result = registerSchema.safeParse({ email: "not-an-email", password: "secret123" });
     expect(result.success).toBe(false);
   });
 });
@@ -34,6 +44,7 @@ describe("mealCreateSchema", () => {
   it("accepts a valid meal", () => {
     const result = mealCreateSchema.safeParse({
       mealType: "lunch",
+      date: "2026-07-09",
       items: [{ foodId: "food1", quantity: 1.5, unitName: "공기" }],
     });
     expect(result.success).toBe(true);

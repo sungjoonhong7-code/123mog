@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 123MOG — Diet Tracker
 
-## Getting Started
+Next.js 16 diet & nutrition tracker with Korean / English UI, food DB (MFDS + common menus), macros, health-condition tags, water/weight logs, and PWA shell.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router) + React 19 + TypeScript
+- **Prisma 7** + SQLite (`@libsql` adapter)
+- **NextAuth** credentials (JWT)
+- **Tailwind CSS 4** + Chart.js
+- **Vitest** unit tests
+
+## Setup
 
 ```bash
+npm install
+cp .env.example .env   # or create .env manually
+# .env needs at least:
+#   DATABASE_URL="file:./dev.db"
+#   NEXTAUTH_SECRET="generate-a-long-random-string"
+#   NEXTAUTH_URL="http://localhost:3000"
+
+npx prisma db push
+npx prisma db seed    # optional: load food catalog (see package.json prisma.seed)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Dev server |
+| `npm run build` / `start` | Production |
+| `npm test` | Vitest |
+| `npm run lint` | ESLint |
+| `npx prisma db push` | Sync schema to SQLite |
+| `npx prisma studio` | Browse DB |
 
-## Learn More
+## Features
 
-To learn more about Next.js, take a look at the following resources:
+- Meal logging (breakfast / lunch / dinner / snack) with serving units
+- Shared food DB + **private custom foods** per user
+- Favorites, recent foods, copy yesterday’s meal
+- BMR/TDEE targets, manual target override, health conditions
+- Sodium / LDL / blood-sugar **estimate tags** (not medical advice)
+- Water + weight logs, streak & weekly progress
+- CSV export, dark mode, ko/en i18n, mobile bottom tabs + FAB
+- Onboarding after first login when profile incomplete
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project layout
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/app/           # pages + API routes
+src/components/    # UI
+src/lib/           # auth, prisma, validation, i18n, dates, healthTags
+prisma/            # schema, seed, imports
+```
 
-## Deploy on Vercel
+## Notes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Dates are handled as **local yyyy-MM-dd** keys (see `src/lib/dates.ts`) to avoid UTC day shifts.
+- In-memory rate limiting is for single-instance deploys only.
+- SQLite is fine for personal/local use; swap `DATABASE_URL` / adapter for production multi-user.
+- Health tags for fat/carbs/sodium are heuristics — UI shows a disclaimer.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+Private / personal project.

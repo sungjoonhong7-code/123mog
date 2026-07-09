@@ -2,8 +2,9 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { LangProvider } from "@/lib/LangContext";
 import { ThemeProvider } from "@/lib/ThemeContext";
-import { NavBar } from "@/components/LangToggle";
+import { NavBar, BottomTabBar, FloatingLogButton } from "@/components/LangToggle";
 import { RegisterSW } from "@/components/RegisterSW";
+import { ToastProvider } from "@/components/Toast";
 
 export const metadata: Metadata = {
   title: "123MOG",
@@ -19,7 +20,6 @@ export const viewport: Viewport = {
   themeColor: "#059669",
 };
 
-// Runs before hydration so the correct theme applies immediately, avoiding a flash of the wrong theme.
 const themeInitScript = `
 (function() {
   try {
@@ -43,11 +43,15 @@ export default function RootLayout({
       <body className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased">
         <ThemeProvider>
           <LangProvider>
-            <RegisterSW />
-            <NavBar />
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              {children}
-            </main>
+            <ToastProvider>
+              <RegisterSW />
+              <NavBar />
+              <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 main-pad">
+                {children}
+              </main>
+              <BottomTabBar />
+              <FloatingLogButton />
+            </ToastProvider>
           </LangProvider>
         </ThemeProvider>
       </body>

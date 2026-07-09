@@ -2,24 +2,37 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { profileUpdateSchema } from "@/lib/validation";
+import { unauthorized } from "@/lib/apiErrors";
 
 const PROFILE_SELECT = {
-  id: true, name: true, email: true,
-  age: true, gender: true, height: true, weight: true,
-  goalWeight: true, activityLevel: true, healthConditions: true,
-  bmr: true, tdee: true, dailyTarget: true,
-  proteinTarget: true, fatTarget: true, carbsTarget: true, sodiumTarget: true,
+  id: true,
+  name: true,
+  email: true,
+  age: true,
+  gender: true,
+  height: true,
+  weight: true,
+  goalWeight: true,
+  activityLevel: true,
+  healthConditions: true,
+  bmr: true,
+  tdee: true,
+  dailyTarget: true,
+  proteinTarget: true,
+  fatTarget: true,
+  carbsTarget: true,
+  sodiumTarget: true,
+  targetsManual: true,
+  waterTargetMl: true,
+  onboardingDone: true,
 } as const;
 
-const GENERAL_SODIUM_TARGET_MG = 2300; // general daily upper limit
-const HYPERTENSION_SODIUM_TARGET_MG = 2000; // recommended limit with hypertension
+const GENERAL_SODIUM_TARGET_MG = 2300;
+const HYPERTENSION_SODIUM_TARGET_MG = 2000;
 
-// GET /api/user/profile - fetch current user's profile
 export async function GET() {
   const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!session?.user?.id) return unauthorized();
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -33,20 +46,17 @@ export async function GET() {
   return NextResponse.json(user);
 }
 
-// PUT /api/user/profile - update body metrics and recalculate targets
 export async function PUT(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    if (!session?.user?.id) return unauthorized();
 
     const body = await request.json();
     const parsed = profileUpdateSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
         { error: parsed.error.issues[0]?.message || "Invalid input" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -55,9 +65,32 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "No user found" }, { status: 404 });
     }
 
-    const { age, gender, height, weight, goalWeight, activityLevel, healthConditions } = parsed.data;
+    const {
+      age,
+      gender,
+      height,
+      weight,
+      goalWeight,
+      activityLevel,
+      healthConditions,
+      targetsManual,
+      dailyTarget: manualDaily,
+      proteinTarget: manualProtein,
+      fatTarget: manualFat,
+      carbsTarget: manualCarbs,
+      sodiumTarget: manualSodium,
+      waterTargetMl,
+      onboardingDone,
+      name,
+    } = parsed.data;
 
-    // Calculate BMR using Mifflin-St Jeor equation
+    const w = weight ?? user.weight;
+    const h = height ?? user.height;
+    const a = age ?? user.age;
+    const g = gender ?? user.gender;
+    const al = activityLevel ?? user.activityLevel;
+    const manual = targetsManual ?? user.targetsManual;
+
     let bmr = user.bmr;
     let tdee = user.tdee;
     let dailyTarget = user.dailyTarget;
@@ -66,22 +99,17 @@ export async function PUT(request: NextRequest) {
     let carbsTarget = user.carbsTarget;
     let sodiumTarget = user.sodiumTarget ?? GENERAL_SODIUM_TARGET_MG;
 
-    const w = weight ?? user.weight;
-    const h = height ?? user.height;
-    const a = age ?? user.age;
-    const al = activityLevel ?? user.activityLevel;
-
-    if (w && h && a && gender) {
-      if (gender === "male") {
+    if (w && h && a && g) {
+      if (g === "male") {
         bmr = 10 * w + 6.25 * h - 5 * a + 5;
-      } else if (gender === "female") {
+      } else if (g === "female") {
         bmr = 10 * w + 6.25 * h - 5 * a - 161;
       } else {
-        bmr = 10 * w + 6.25 * h - 5 * a - 78; // average
+        bmr = 10 * w + 6.25 * h - 5 * a - 78;
       }
     }
 
-    if (bmr && al) {
+    if (!manual && bmr && al) {
       const multipliers: Record<string, number> = {
         sedentary: 1.2,
         light: 1.375,
@@ -93,12 +121,12 @@ export async function PUT(request: NextRequest) {
       tdee = bmr * mult;
 
       const gW = goalWeight ?? user.goalWeight;
-      if (gW && weight && gW < weight) {
-        dailyTarget = tdee - 500; // cutting
-      } else if (gW && weight && gW > weight) {
-        dailyTarget = tdee + 300; // bulking
+      if (gW && w && gW < w) {
+        dailyTarget = tdee - 500;
+      } else if (gW && w && gW > w) {
+        dailyTarget = tdee + 300;
       } else {
-        dailyTarget = tdee; // maintenance
+        dailyTarget = tdee;
       }
 
       if (w) {
@@ -106,35 +134,58 @@ export async function PUT(request: NextRequest) {
       }
       if (dailyTarget) {
         fatTarget = Math.round((dailyTarget * 0.25) / 9 * 10) / 10;
-        carbsTarget = Math.round(((dailyTarget - (proteinTarget ?? 50) * 4 - (fatTarget ?? 50) * 9) / 4) * 10) / 10;
+        carbsTarget =
+          Math.round(
+            ((dailyTarget - (proteinTarget ?? 50) * 4 - (fatTarget ?? 50) * 9) / 4) * 10,
+          ) / 10;
+      }
+
+      const conditions = (healthConditions ?? user.healthConditions ?? "").toLowerCase();
+      if (conditions) {
+        if (conditions.includes("diabetes") || conditions.includes("당뇨")) {
+          if (w) proteinTarget = Math.round(w * 1.5 * 10) / 10;
+          if (dailyTarget) {
+            fatTarget = Math.round((dailyTarget * 0.3) / 9 * 10) / 10;
+            carbsTarget =
+              Math.round(
+                ((dailyTarget - (proteinTarget ?? 60) * 4 - (fatTarget ?? 50) * 9) / 4) * 10,
+              ) / 10;
+            if (carbsTarget && carbsTarget > 200) carbsTarget = 200;
+          }
+        }
+        if (
+          conditions.includes("high_cholesterol") ||
+          conditions.includes("고지혈") ||
+          conditions.includes("콜레스테롤")
+        ) {
+          if (dailyTarget) {
+            fatTarget = Math.round((dailyTarget * 0.2) / 9 * 10) / 10;
+            carbsTarget =
+              Math.round(
+                ((dailyTarget - (proteinTarget ?? 60) * 4 - (fatTarget ?? 40) * 9) / 4) * 10,
+              ) / 10;
+          }
+        }
+        if (conditions.includes("hypertension") || conditions.includes("고혈압")) {
+          sodiumTarget = HYPERTENSION_SODIUM_TARGET_MG;
+        } else {
+          sodiumTarget = GENERAL_SODIUM_TARGET_MG;
+        }
       }
     }
 
-    // Apply health condition adjustments
-    const conditions = (healthConditions ?? user.healthConditions ?? "").toLowerCase();
-    if (conditions) {
-      if (conditions.includes('diabetes') || conditions.includes('당뇨')) {
-        if (w) proteinTarget = Math.round(w * 1.5 * 10) / 10;
-        if (dailyTarget) {
-          fatTarget = Math.round((dailyTarget * 0.30) / 9 * 10) / 10;
-          carbsTarget = Math.round(((dailyTarget - (proteinTarget ?? 60) * 4 - (fatTarget ?? 50) * 9) / 4) * 10) / 10;
-          if (carbsTarget && carbsTarget > 200) carbsTarget = 200;
-        }
-      }
-      if (conditions.includes('high_cholesterol') || conditions.includes('고지혈') || conditions.includes('콜레스테롤')) {
-        if (dailyTarget) {
-          fatTarget = Math.round((dailyTarget * 0.20) / 9 * 10) / 10;
-          carbsTarget = Math.round(((dailyTarget - (proteinTarget ?? 60) * 4 - (fatTarget ?? 40) * 9) / 4) * 10) / 10;
-        }
-      }
-      if (conditions.includes('hypertension') || conditions.includes('고혈압')) {
-        sodiumTarget = HYPERTENSION_SODIUM_TARGET_MG;
-      }
+    if (manual) {
+      if (manualDaily != null) dailyTarget = manualDaily;
+      if (manualProtein != null) proteinTarget = manualProtein;
+      if (manualFat != null) fatTarget = manualFat;
+      if (manualCarbs != null) carbsTarget = manualCarbs;
+      if (manualSodium != null) sodiumTarget = manualSodium;
     }
 
     const updated = await prisma.user.update({
       where: { id: user.id },
       data: {
+        name: name !== undefined ? name : user.name,
         age: age ?? user.age,
         gender: gender ?? user.gender,
         height: height ?? user.height,
@@ -148,7 +199,10 @@ export async function PUT(request: NextRequest) {
         fatTarget,
         carbsTarget,
         sodiumTarget,
+        targetsManual: manual,
+        waterTargetMl: waterTargetMl ?? user.waterTargetMl,
         healthConditions: healthConditions ?? user.healthConditions,
+        onboardingDone: onboardingDone ?? user.onboardingDone,
       },
       select: PROFILE_SELECT,
     });
@@ -156,9 +210,14 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(updated);
   } catch (error) {
     console.error("Update profile error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+}
+
+export async function DELETE() {
+  const session = await auth();
+  if (!session?.user?.id) return unauthorized();
+
+  await prisma.user.delete({ where: { id: session.user.id } });
+  return NextResponse.json({ success: true });
 }

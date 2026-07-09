@@ -1,13 +1,14 @@
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import DateNav from "@/components/dashboard/DateNav";
 import SummaryCards from "@/components/dashboard/SummaryCards";
 import MealList from "@/components/dashboard/MealList";
-import MacroChart from "@/components/dashboard/MacroChart";
-import TrendChart from "@/components/dashboard/TrendChart";
+import DayExtras from "@/components/dashboard/DayExtras";
+import ChartsToggle from "@/components/dashboard/ChartsToggle";
 import { augmentHealthTags } from "@/lib/healthTags";
-import { format } from "date-fns";
+import { isValidDateKey, localDayRange, toLocalDateKey } from "@/lib/dates";
 
 interface DashboardPageProps {
   searchParams: Promise<{ date?: string }>;
@@ -20,10 +21,9 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   }
 
   const { date } = await searchParams;
-  const today = format(new Date(), "yyyy-MM-dd");
-  const dateStr = date || today;
+  const today = toLocalDateKey();
+  const dateStr = isValidDateKey(date) ? date : today;
 
-  // Fetch signed-in user's profile
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: {
@@ -33,12 +33,19 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       fatTarget: true,
       carbsTarget: true,
       sodiumTarget: true,
+      healthConditions: true,
+      onboardingDone: true,
+      height: true,
+      weight: true,
+      age: true,
     },
   });
 
-  // Fetch meals for the selected date
-  const startDate = new Date(dateStr + "T00:00:00");
-  const endDate = new Date(dateStr + "T23:59:59.999");
+  if (user && !user.onboardingDone && (!user.height || !user.weight || !user.age)) {
+    redirect("/onboarding");
+  }
+
+  const { start: startDate, end: endDate } = localDayRange(dateStr);
 
   const meals = await prisma.meal.findMany({
     where: {
@@ -69,7 +76,10 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       healthTags: augmentHealthTags(item.food.healthTags, {
         carbsPer100g: item.totalGrams > 0 ? (item.totalCarbs / item.totalGrams) * 100 : null,
         fatPer100g: item.totalGrams > 0 ? (item.totalFat / item.totalGrams) * 100 : null,
-        sodiumPer100g: item.totalGrams > 0 && item.totalSodium != null ? (item.totalSodium / item.totalGrams) * 100 : null,
+        sodiumPer100g:
+          item.totalGrams > 0 && item.totalSodium != null
+            ? (item.totalSodium / item.totalGrams) * 100
+            : null,
       }),
       quantity: item.quantity,
       unitName: item.unitName,
@@ -77,14 +87,13 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     })),
   }));
 
-  // Aggregate totals across all meals for the day
-  const totalCalories = meals.flatMap((m) => m.items).reduce((sum, item) => sum + item.totalCalories, 0);
-  const totalProtein = meals.flatMap((m) => m.items).reduce((sum, item) => sum + item.totalProtein, 0);
-  const totalFat = meals.flatMap((m) => m.items).reduce((sum, item) => sum + item.totalFat, 0);
-  const totalCarbs = meals.flatMap((m) => m.items).reduce((sum, item) => sum + item.totalCarbs, 0);
-  const sodiumItems = meals.flatMap((m) => m.items);
-  const totalSodium = sodiumItems.some((item) => item.totalSodium != null)
-    ? sodiumItems.reduce((sum, item) => sum + (item.totalSodium ?? 0), 0)
+  const allItems = meals.flatMap((m) => m.items);
+  const totalCalories = allItems.reduce((sum, item) => sum + item.totalCalories, 0);
+  const totalProtein = allItems.reduce((sum, item) => sum + item.totalProtein, 0);
+  const totalFat = allItems.reduce((sum, item) => sum + item.totalFat, 0);
+  const totalCarbs = allItems.reduce((sum, item) => sum + item.totalCarbs, 0);
+  const totalSodium = allItems.some((item) => item.totalSodium != null)
+    ? allItems.reduce((sum, item) => sum + (item.totalSodium ?? 0), 0)
     : null;
 
   const targets = {
@@ -97,19 +106,32 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   return (
     <div>
-      <DateNav initialDate={today} />
+      <Suspense fallback={null}>
+        <DateNav initialDate={today} />
+      </Suspense>
 
       <SummaryCards
         calories={{ current: totalCalories, target: targets.calories }}
         protein={{ current: totalProtein, target: targets.protein }}
         fat={{ current: totalFat, target: targets.fat }}
         carbs={{ current: totalCarbs, target: targets.carbs }}
-        sodium={totalSodium != null ? { current: totalSodium, target: targets.sodium } : undefined}
+        sodium={
+          totalSodium != null
+            ? { current: totalSodium, target: targets.sodium }
+            : { current: 0, target: targets.sodium }
+        }
       />
 
-      <MealList meals={mealGroups} />
+      <DayExtras
+        dateKey={dateStr}
+        sodiumCurrent={totalSodium}
+        sodiumTarget={targets.sodium}
+        healthConditions={user?.healthConditions ?? ""}
+      />
 
-      <MacroChart
+      <MealList meals={mealGroups} dateKey={dateStr} />
+
+      <ChartsToggle
         protein={totalProtein}
         fat={totalFat}
         carbs={totalCarbs}
@@ -118,10 +140,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           totalCalories: m.totalCalories,
         }))}
       />
-
-      <div className="mt-6">
-        <TrendChart />
-      </div>
     </div>
   );
 }

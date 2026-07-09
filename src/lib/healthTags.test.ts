@@ -39,8 +39,18 @@ describe("augmentHealthTags", () => {
   });
 
   it("keeps existing curated sugar/ldl tags and only adds sodium", () => {
-    const result = augmentHealthTags("ldl_good,sugar_bad", { carbsPer100g: 5, fatPer100g: 25, sodiumPer100g: 50 });
+    const result = augmentHealthTags("ldl_good,sugar_bad", {
+      carbsPer100g: 5,
+      fatPer100g: 25,
+      sodiumPer100g: 50,
+    });
     expect(result).toBe("ldl_good,sugar_bad,sodium_good");
+  });
+
+  it("does not duplicate sodium tags", () => {
+    const result = augmentHealthTags("sodium_good", { sodiumPer100g: 50, carbsPer100g: 5, fatPer100g: 2 });
+    expect(result).toBe("sodium_good,sugar_good,ldl_good");
+    expect(result?.split(",").filter((t) => t.startsWith("sodium_")).length).toBe(1);
   });
 
   it("returns null when nothing is known", () => {

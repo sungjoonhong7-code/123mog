@@ -18,23 +18,23 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        if (!rateLimit(`login:${credentials.email.toLowerCase()}`, 10, 10 * 60 * 1000)) {
+        const email = credentials.email.trim().toLowerCase();
+
+        if (!rateLimit(`login:${email}`, 10, 10 * 60 * 1000)) {
           throw new Error("Too many login attempts. Please try again later.");
         }
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+          where: { email },
         });
 
         if (!user) {
+          // Constant-time-ish delay path: still run a compare-like work is hard without hash;
+          // return null uniformly to avoid account enumeration.
           return null;
         }
 
-        const isValid = await bcrypt.compare(
-          credentials.password,
-          user.password,
-        );
-
+        const isValid = await bcrypt.compare(credentials.password, user.password);
         if (!isValid) {
           return null;
         }
@@ -51,12 +51,17 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.sub = user.id;
+        token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user && token.sub) {
-        session.user.id = token.sub;
+      if (session.user) {
+        session.user.id = (token.id as string) || token.sub || "";
+        session.user.email = (token.email as string) || session.user.email || "";
+        session.user.name = (token.name as string | null | undefined) ?? session.user.name ?? null;
       }
       return session;
     },
@@ -72,15 +77,4 @@ export const authOptions: NextAuthOptions = {
 
 export async function auth(): Promise<Session | null> {
   return getServerSession(authOptions);
-}
-
-// Augment next-auth Session type to include user.id
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      email: string;
-      name?: string | null;
-    };
-  }
 }
