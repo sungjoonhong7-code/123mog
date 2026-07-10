@@ -24,25 +24,71 @@ const dbUrl = process.env.DATABASE_URL || "file:./dev.db";
 const adapter = new PrismaLibSql({ url: dbUrl });
 const prisma = new PrismaClient({ adapter });
 
-// ─── USDA items (simplified — key ingredients only) ──────────────────────────
-const USDA_API_KEY = process.env.USDA_API_KEY;
+// ─── USDA import (from pre-downloaded JSON) ──────────────────────────────────
+async function importUSDA() {
+  let items: any[];
+  try {
+    items = JSON.parse(fs.readFileSync("prisma/data/usda-nutrition.json", "utf-8"));
+  } catch {
+    console.log("⚠️  usda-nutrition.json not found — skipping USDA import");
+    return;
+  }
 
-const USDA_SEARCH_TERMS = [
-  "chicken breast raw", "chicken thigh raw", "beef sirloin raw", "beef ground raw",
-  "pork loin raw", "salmon raw", "tuna raw", "shrimp raw",
-  "egg whole raw", "tofu firm",
-  "white rice cooked", "brown rice cooked", "pasta cooked", "bread whole wheat",
-  "oatmeal cooked", "quinoa cooked", "sweet potato raw", "potato raw",
-  "broccoli raw", "spinach raw", "kale raw", "lettuce romaine", "cabbage raw",
-  "carrot raw", "onion raw", "garlic raw", "tomato raw", "cucumber raw",
-  "bell pepper raw", "mushroom raw", "zucchini raw",
-  "apple raw", "banana raw", "orange raw", "grape raw", "strawberry raw",
-  "blueberry raw", "avocado raw",
-  "milk whole", "yogurt plain", "cheese cheddar", "butter salted",
-  "olive oil", "vegetable oil", "sesame oil",
-  "almond raw", "walnut raw", "peanut raw",
-  "soy sauce", "salt table", "sugar white", "honey",
-];
+  const existing = await prisma.food.findMany({
+    where: { name: { startsWith: "[USDA]" } },
+    select: { name: true },
+  });
+  const seen = new Set(existing.map(f => f.name.toLowerCase()));
+
+  let imported = 0;
+  let skipped = 0;
+
+  for (const item of items) {
+    if (seen.has(item.name.toLowerCase())) {
+      skipped++;
+      continue;
+    }
+
+    // Determine subcategory from name
+    const lc = item.nameEn.toLowerCase();
+    let sub = "other";
+    if (/lettuce|spinach|kale|cabbage|carrot|onion|garlic|tomato|cucumber|pepper|mushroom|broccoli|zucchini|celery|potato|sweet potato/.test(lc)) sub = "vegetable";
+    else if (/apple|banana|orange|grape|strawberry|blueberry|watermelon|avocado/.test(lc)) sub = "fruit";
+    else if (/chicken|beef|pork|turkey|lamb/.test(lc)) sub = "meat";
+    else if (/salmon|tuna|shrimp|cod|fish|seafood/.test(lc)) sub = "seafood";
+    else if (/rice|pasta|bread|oat|quinoa|grain|cereal/.test(lc)) sub = "grain";
+    else if (/milk|yogurt|cheese|butter|cream|egg/.test(lc)) sub = "dairy";
+    else if (/almond|walnut|peanut|seed|nut/.test(lc)) sub = "nut";
+    else if (/oil|fat/.test(lc)) sub = "oil";
+    else if (/soy sauce|salt|sugar|honey|vinegar|spice/.test(lc)) sub = "seasoning";
+    else if (/tofu|bean|lentil|legume/.test(lc)) sub = "legume";
+
+    await prisma.food.create({
+      data: {
+        name: item.name,
+        nameEn: item.nameEn,
+        category: "general",
+        subcategory: sub,
+        caloriesPer100g: item.caloriesPer100g,
+        proteinPer100g: item.proteinPer100g,
+        fatPer100g: item.fatPer100g,
+        carbsPer100g: item.carbsPer100g,
+        sodiumPer100g: item.sodiumPer100g,
+        servings: {
+          create: [
+            { unitName: "100g", gramsPerUnit: 100 },
+            { unitName: "g", gramsPerUnit: 1 },
+          ],
+        },
+      },
+    });
+
+    imported++;
+    seen.add(item.name.toLowerCase());
+  }
+
+  console.log(`  USDA: ${imported} imported, ${skipped} already existed`);
+}
 
 // ─── Branded food imports from JSON ──────────────────────────────────────────
 interface BrandedItem {
