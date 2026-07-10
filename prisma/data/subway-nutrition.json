@@ -143,6 +143,160 @@
     }
   ],
   [
+    "Italian B.M.T.",
+    {
+      "size": "220",
+      "cal": "330",
+      "pro": "20.4",
+      "fat": "10.5",
+      "car": "33.4",
+      "na": "892"
+    }
+  ],
+  [
+    "Chicken Teriyaki",
+    {
+      "size": "247",
+      "cal": "320",
+      "pro": "27.2",
+      "fat": "4.1",
+      "car": "38.2",
+      "na": "789"
+    }
+  ],
+  [
+    "Rotisserie Chicken Energy Bowl",
+    {
+      "size": "395",
+      "cal": "306",
+      "pro": "20.4",
+      "fat": "11.4",
+      "car": "31.7",
+      "na": "831"
+    }
+  ],
+  [
+    "Beef Brisket Energy Bowl",
+    {
+      "size": "368",
+      "cal": "390",
+      "pro": "23.8",
+      "fat": "26.9",
+      "car": "17.6",
+      "na": "1043"
+    }
+  ],
+  [
+    "Avo Caesar Chicken Energy Bowl",
+    {
+      "size": "409",
+      "cal": "380",
+      "pro": "20.0",
+      "fat": "23.8",
+      "car": "24.8",
+      "na": "1086"
+    }
+  ],
+  [
+    "Spicy Beef Taco Energy Bowl",
+    {
+      "size": "352",
+      "cal": "285",
+      "pro": "9.6",
+      "fat": "17.2",
+      "car": "24.9",
+      "na": "822"
+    }
+  ],
+  [
+    "Falafel Energy Bowl",
+    {
+      "size": "397",
+      "cal": "401",
+      "pro": "10.0",
+      "fat": "24.9",
+      "car": "38.3",
+      "na": "1005"
+    }
+  ],
+  [
+    "Loaded Nachos Bowl",
+    {
+      "size": "243",
+      "cal": "598",
+      "pro": "7.5",
+      "fat": "38.6",
+      "car": "55.2",
+      "na": "1114"
+    }
+  ],
+  [
+    "Black Pepper Chicken Nuggets",
+    {
+      "size": "105",
+      "cal": "236",
+      "pro": "14.1",
+      "fat": "10.9",
+      "car": "19.7",
+      "na": "622"
+    }
+  ],
+  [
+    "Mushroom Soup",
+    {
+      "size": "240",
+      "cal": "116",
+      "pro": "1.7",
+      "fat": "5.4",
+      "car": "17.5",
+      "na": "903"
+    }
+  ],
+  [
+    "Tomato Soup",
+    {
+      "size": "240",
+      "cal": "339",
+      "pro": "2",
+      "fat": "11",
+      "car": "14.7",
+      "na": "891"
+    }
+  ],
+  [
+    "Chocolate Chip Cookie",
+    {
+      "size": "45",
+      "cal": "217",
+      "pro": "2.4",
+      "fat": "10.4",
+      "car": "28.5",
+      "na": "161"
+    }
+  ],
+  [
+    "Double Chocolate Chip Cookie",
+    {
+      "size": "45",
+      "cal": "213",
+      "pro": "2.5",
+      "fat": "9.9",
+      "car": "28.4",
+      "na": "160"
+    }
+  ],
+  [
+    "Macaroni & Cheese",
+    {
+      "size": "150",
+      "cal": "363",
+      "pro": "11.5",
+      "fat": "22.7",
+      "car": "28.4",
+      "na": "654"
+    }
+  ],
+  [
     "Chicken Sausage Egg & Cheese",
     {
       "size": "329",
@@ -184,28 +338,6 @@
       "fat": "14.2",
       "car": "45.2",
       "na": "1054"
-    }
-  ],
-  [
-    "Mushroom Soup",
-    {
-      "size": "240",
-      "cal": "116",
-      "pro": "1.7",
-      "fat": "5.4",
-      "car": "17.5",
-      "na": "903"
-    }
-  ],
-  [
-    "Tomato Soup",
-    {
-      "size": "240",
-      "cal": "339",
-      "pro": "2",
-      "fat": "11",
-      "car": "14.7",
-      "na": "891"
     }
   ]
 ]
