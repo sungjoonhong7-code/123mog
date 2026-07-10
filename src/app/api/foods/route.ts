@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { foodCreateSchema } from "@/lib/validation";
 import { augmentHealthTags } from "@/lib/healthTags";
 import { unauthorized } from "@/lib/apiErrors";
+import { rankFoods } from "@/lib/foodRanking";
 
 // GET /api/foods?q=searchterm — shared foods + caller's private customs
 export async function GET(request: NextRequest) {
@@ -74,23 +75,48 @@ export async function GET(request: NextRequest) {
           ],
         }
       : visibility,
-    include: {
-      servings: true,
-    },
-    take: 20,
-    orderBy: { name: "asc" },
+    include: { servings: true },
+    take: 50,
   });
+
+  // Rank results for logged-in users with targets set
+  let ranked: typeof foods;
+  if (userId && q) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { dailyTarget: true, proteinTarget: true, fatTarget: true, carbsTarget: true, sodiumTarget: true, healthConditions: true },
+    });
+    if (user?.dailyTarget) {
+      const scores = await rankFoods(foods, {
+        userId,
+        dailyTarget: user.dailyTarget,
+        proteinTarget: user.proteinTarget,
+        fatTarget: user.fatTarget,
+        carbsTarget: user.carbsTarget,
+        sodiumTarget: user.sodiumTarget,
+        healthConditions: user.healthConditions,
+      });
+      const rankMap = new Map(scores.map(s => [s.foodId, s.score]));
+      ranked = [...foods].sort((a, b) => (rankMap.get(b.id) ?? 0) - (rankMap.get(a.id) ?? 0));
+    } else {
+      ranked = foods;
+    }
+  } else {
+    ranked = foods;
+  }
+
+  const top = ranked.slice(0, 20);
 
   let favoriteIds = new Set<string>();
   if (userId) {
     const favs = await prisma.favoriteFood.findMany({
-      where: { userId, foodId: { in: foods.map((f) => f.id) } },
+      where: { userId, foodId: { in: top.map((f) => f.id) } },
       select: { foodId: true },
     });
     favoriteIds = new Set(favs.map((f) => f.foodId));
   }
 
-  const withTags = foods.map((food) => ({
+  const withTags = top.map((food) => ({
     ...food,
     healthTags: augmentHealthTags(food.healthTags, food),
     isFavorite: favoriteIds.has(food.id),
